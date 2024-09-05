@@ -14,4 +14,4 @@ Static variables can be used in two contexts:
 
 We are interested only in the first point in this project. Even outside this project the Hive norms, which we had to follow during our studies, expressly forbid us from using global variables unless a project permits us (I think we were allowed to use one global variable in 42-minishell).
 
-In the get_next_line() function that we create in this project, the static variable is be used to store the rest of the read string after a newline character (\n).
+In the get_next_line() function that we create in this project, the static variable is used to store the rest of the read string after a newline character (\n).
