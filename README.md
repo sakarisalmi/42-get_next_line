@@ -17,4 +17,40 @@ We are interested only in the first point in this project. Even outside this pro
 In the get_next_line() function that we create in this project, the static variable is used to store the rest of the read string after a newline character ('\n').
 
 ## How Different Implementations Can Make All the Difference
+My original implementation of the project is ok, but it definitely isn't the most efficient algorithm-wise, especially so if the buffer size is set to something very large.
 
+To show this, I've decided to create a simple test program where I retrieve all the contents in the bible using get_next_line():
+```
+# include "get_next_line.h"
+# include <fcntl.h>
+
+int main(){
+	char *line;
+
+	int fd = open("bible.txt", O_RDONLY);
+	if (fd < 0){
+		return(1);
+	}
+
+	while((line = get_next_line(fd)) != NULL){
+		free(line);
+	}
+
+	return(0);
+}
+```
+When I test the program with the default buffer size of 30, measuring the execution time with the time command:
+```
+> cc -Wall -Werror -Wextra get_next_line.c get_next_line_utils.c test.c -o test
+> time ./test
+./test  0.10s user 0.08s system 98% cpu 0.185 total
+>
+```
+Doesn't seem all that bad, but doing the same with a buffer size of a million nets a very different kind of result:
+```
+> cc -Wall -Werror -Wextra get_next_line.c get_next_line_utils.c test.c -o test -DBUFFER_SIZE=1000000
+> time ./test
+./test  72.45s user 0.48s system 99% cpu 1:13.16 total
+>
+```
+Damn, over a minute! What the hell happened?
