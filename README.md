@@ -19,7 +19,7 @@ In the get_next_line() function that we create in this project, the static varia
 ## How Different Implementations Can Make All the Difference
 My original implementation of the project is ok, but it definitely isn't the most efficient algorithm-wise, especially so if the buffer size is set to something very large.
 
-To show this, I've decided to create a simple test program where I retrieve all the contents in the bible using get_next_line():
+To show this, I've decided to create a simple test program where I retrieve all the contents in the Bible using get_next_line():
 ```
 # include "get_next_line.h"
 # include <fcntl.h>
@@ -44,13 +44,17 @@ When I test the program with the default buffer size of 30, measuring the execut
 > cc -Wall -Werror -Wextra get_next_line.c get_next_line_utils.c test.c -o test
 > time ./test
 ./test  0.10s user 0.08s system 98% cpu 0.185 total
->
 ```
-Doesn't seem all that bad, but doing the same with a buffer size of a million nets a very different kind of result:
+Doesn't seem all that bad, but doing the same with a buffer size of a million nets a very different result:
 ```
 > cc -Wall -Werror -Wextra get_next_line.c get_next_line_utils.c test.c -o test -DBUFFER_SIZE=1000000
 > time ./test
 ./test  72.45s user 0.48s system 99% cpu 1:13.16 total
->
 ```
 Damn, over a minute! What the hell happened?
+
+Well, it isn't all that complicated: if you look into the helper functions like ft_strjoin, get_single_line and trim_static_line, you'll notice that some things are unnecessarily repeated, and by refactoring these things you can make the get_next_line-function a lot more efficient. Instead of repeatedly reading through the string to find the next newline-character, why don't we just read it once and simply save the index of that character? And why haven't we stored the the length of the string somewhere already so that we don't need to find it out later on? This is especially useful when the buffer size is massive - in the original version of the project, ft_strlen is used every single time to figure out the length of the string, which undoubtedly slows the down the whole function, especially so when going through something as long as the Bible.
+
+The project subject doesn't actually limit how we can use static variables, so why shouldn't we create an entire struct that holds the read line with all of this supplemental data (index of newline character in the string, the length of the static string, etc.), and set that struct as static? That way we have data saved that we can use to skip some quite taxing operations.
+
+I've created a newer version of the project with this implementation in mind.
