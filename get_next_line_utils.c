@@ -1,10 +1,10 @@
 #include "get_next_line.h"
 
 size_t	ft_strlen(const char *s);
-char	*ft_strchr(char *s, int c);
-char	*ft_strjoin(char *static_line, char *buffer);
-char	*get_single_line(char *str);
-char	*trim_static_line(char *old_str);
+int		get_newline_index(t_gnl_struct *gnl_struct);
+char	*join_read_buffer_to_main_buffer(t_gnl_struct *gnl_struct);
+char	*get_single_line(t_gnl_struct *gnl_struct);
+char	*trim_main_buffer(t_gnl_struct *gnl_struct);
 
 size_t	ft_strlen(const char *s)
 {
@@ -19,105 +19,103 @@ size_t	ft_strlen(const char *s)
 	return (len);
 }
 
-char	*ft_strchr(char *s, int c)
+int	get_newline_index(t_gnl_struct *gnl_struct)
 {
 	int		i;
 
-	if (!s)
+	if (!gnl_struct->main_buffer)
 		return (0);
-	i = 0;
-	while (s[i] != '\0')
+	i = gnl_struct->last_checked_index;
+	while (gnl_struct->main_buffer[i])
 	{
-		if (s[i] == (char)c)
-			return ((char *)&s[i]);
+		if (gnl_struct->main_buffer[i] == '\n')
+		{
+			gnl_struct->newline_index = i;
+			return(1);
+		}
 		i++;
 	}
-	return (0);
+	gnl_struct->last_checked_index = i;
+	return(0);
 }
 
-char	*ft_strjoin(char *static_line, char *buffer)
+char	*join_read_buffer_to_main_buffer(t_gnl_struct *gnl_struct)
 {
-	unsigned int		len;
-	unsigned int		j;
-	char				*str;
+	char 	*new_main_buffer;
+	ssize_t i;
+	ssize_t j;
 
-	len = 0;
-	j = 0;
-	if (!static_line)
+	if (!gnl_struct->main_buffer)
 	{
-		static_line = (char *)malloc(sizeof(char) * 1);
-		static_line[0] = '\0';
+		gnl_struct->main_buffer = (char *)malloc(sizeof(char) * 1);
+		gnl_struct->main_buffer[0] = '\0';
 	}
-	if (!static_line || !buffer)
+	if (!gnl_struct->main_buffer || !gnl_struct->read_buffer)
+		return(NULL);
+	new_main_buffer = (char *)malloc((gnl_struct->main_buffer_length + gnl_struct->read_bytes + 1) * sizeof(char));
+	if (!new_main_buffer)
 		return (NULL);
-	str = (char *)malloc((ft_strlen(static_line) + ft_strlen(buffer)
-				+ 1) * sizeof(char));
-	if (!str)
-		return (NULL);
-	while (static_line[j])
-		str[len++] = static_line[j++];
+
+	i = 0;
+	while(i < gnl_struct->main_buffer_length)
+	{
+		new_main_buffer[i] = gnl_struct->main_buffer[i];
+		++i;
+	}
 	j = 0;
-	while (buffer[j])
-		str[len++] = buffer[j++];
-	str[len] = '\0';
-	free(static_line);
-	return (str);
+	while(j < gnl_struct->read_bytes)
+		new_main_buffer[i++] = gnl_struct->read_buffer[j++];
+	new_main_buffer[i] = '\0';
+	free(gnl_struct->main_buffer);
+	gnl_struct->main_buffer_length += gnl_struct->read_bytes;
+	return(new_main_buffer);
 }
 
-char	*get_single_line(char *static_line)
+char	*get_single_line(t_gnl_struct *gnl_struct)
 {
 	char	*single_line;
-	int		len;
 	int		i;
 
-	len = 0;
-	i = -1;
-	if (!static_line)
-		return (NULL);
-	while (static_line[len] && static_line[len] != '\n')
-		len++;
-	if (static_line[len] == '\n')
-		len++;
-	single_line = (char *)malloc(sizeof(char) * (len + 1));
+	if (!gnl_struct->main_buffer)
+		return(NULL);
+	single_line = (char *)malloc(sizeof(char) * (gnl_struct->newline_index + 2));
 	if (!single_line)
-		return (NULL);
-	while (++i < len)
-		single_line[i] = static_line[i];
+		return(NULL);
+	i = 0;
+	while (i <= gnl_struct->newline_index)
+	{
+		single_line[i] = gnl_struct->main_buffer[i];
+		++i;
+	}
 	single_line[i] = '\0';
-	if (single_line[0] != '\0')
-		return (single_line);
-	else
+	if (single_line[0] == '\0')
 	{
 		free(single_line);
-		return (NULL);
+		return(NULL);
 	}
+	return(single_line);
 }
 
-char	*trim_static_line(char *old_str)
+char	*trim_main_buffer(t_gnl_struct *gnl_struct)
 {
-	unsigned int		i;
-	unsigned int		j;
-	char				*new_str;
+	char	*new_main_buffer;
+	int 	i;
+	int		j;
 
-	i = 0;
-	while (old_str[i] && old_str[i] != '\n')
-		i++;
-	if (!old_str[i])
+	// if true, discard whole buffer
+	if (gnl_struct->main_buffer_length == gnl_struct->newline_index + 1)
 	{
-		free(old_str);
-		return (NULL);
+		free(gnl_struct->main_buffer);
+		return(NULL);
 	}
-	new_str = (char *)malloc(sizeof(char) * (ft_strlen(old_str) - i + 1));
-	if (!new_str)
-		return (NULL);
-	i++;
+	new_main_buffer = (char *)malloc(sizeof(char) * (gnl_struct->main_buffer_length - gnl_struct->newline_index));
+	if (!new_main_buffer)
+		return(NULL);
+	i = gnl_struct->newline_index + 1;
 	j = 0;
-	while (old_str[i])
-			new_str[j++] = old_str[i++];
-	new_str[j] = '\0';
-	free(old_str);
-	if (new_str[0] != '\0')
-		return (new_str);
-	free(new_str);
-	return (NULL);
+	while (i < gnl_struct->main_buffer_length)
+		new_main_buffer[j++] = gnl_struct->main_buffer[i++];
+	free(gnl_struct->main_buffer);
+	gnl_struct->main_buffer_length -= gnl_struct->newline_index + 1;
+	return(new_main_buffer);
 }

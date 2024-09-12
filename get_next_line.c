@@ -1,48 +1,66 @@
 #include "get_next_line.h"
 
-char	*get_next_line(int fd);
-char	*read_next_line(int fd, char *static_line);
+#include <stdio.h>
+
+char		*get_next_line(int fd);
+static void	read_next_line(int fd, t_gnl_struct *gnl_struct);
+static void	clean_gnl_struct(t_gnl_struct *gnl_struct);
+
 
 char	*get_next_line(int fd)
 {
-	static char	*static_line;
-	char		*single_line;
+	static t_gnl_struct	gnl_struct;
+	char				*single_line;
 
 	if (fd < 0 || read(fd, 0, 0) < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
-	static_line = read_next_line(fd, static_line);
-	if (!static_line)
-		return (NULL);
-	single_line = get_single_line(static_line);
-	static_line = trim_static_line(static_line);
+	read_next_line(fd, &gnl_struct);
+	if (gnl_struct.main_buffer == NULL)
+	{
+		clean_gnl_struct(&gnl_struct);
+		return(NULL);
+	}
+	single_line = get_single_line(&gnl_struct);
+	gnl_struct.main_buffer = trim_main_buffer(&gnl_struct);
+	// printf("main buffer length: %zd\tnewline index: %zd\tread buffer length: %zd\tlast checked index: %zd\n", gnl_struct.main_buffer_length, gnl_struct.newline_index, gnl_struct.read_bytes, gnl_struct.last_checked_index);
 	return (single_line);
 }
 
-char	*read_next_line(int fd, char *static_line)
+static void	read_next_line(int fd, t_gnl_struct *gnl_struct)
 {
-	char	*buffer;
-	int		read_bytes;
-	int		i;
-
-	buffer = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
-	if (!buffer)
-		return (NULL);
-	read_bytes = 1;
-	while (read_bytes != 0 && !ft_strchr(static_line, '\n'))
+	gnl_struct->read_buffer = (char *)malloc(sizeof(char) * BUFFER_SIZE + 1);
+	if (!gnl_struct->read_buffer)
+		return;
+	gnl_struct->read_bytes = 1;
+	gnl_struct->last_checked_index = 0;
+	while (gnl_struct->read_bytes != 0 && !get_newline_index(gnl_struct))
 	{
-		read_bytes = read(fd, buffer, BUFFER_SIZE);
-		if (read_bytes == -1)
-		{
-			free(buffer);
-			return (NULL);
-		}
-		buffer[read_bytes] = '\0';
-		if (read_bytes != 0)
-			static_line = ft_strjoin(static_line, buffer);
+		gnl_struct->read_bytes = read(fd, gnl_struct->read_buffer, BUFFER_SIZE);
+		if (gnl_struct->read_bytes < 0)
+			return;
+		gnl_struct->read_buffer[gnl_struct->read_bytes] = '\0';
+		if (gnl_struct->read_bytes != 0)
+			gnl_struct->main_buffer = join_read_buffer_to_main_buffer(gnl_struct);
+		else
+			gnl_struct->newline_index = gnl_struct->main_buffer_length - 1;
 	}
-	i = -1;
-	while (buffer[++i] != '\0')
-		buffer[i] = '\0';
-	free(buffer);
-	return (static_line);
+	free(gnl_struct->read_buffer);
+	gnl_struct->read_buffer = NULL;
+}
+
+static void	clean_gnl_struct(t_gnl_struct *gnl_struct)
+{
+	if (gnl_struct->main_buffer)
+	{
+		free(gnl_struct->main_buffer);
+		gnl_struct->main_buffer = NULL;
+	}
+	if (gnl_struct->read_buffer)
+	{
+		free(gnl_struct->read_buffer);
+		gnl_struct->read_buffer = NULL;
+	}
+	gnl_struct->main_buffer_length = -1;
+	gnl_struct->newline_index = -1;
+	gnl_struct->read_bytes = 0;
 }

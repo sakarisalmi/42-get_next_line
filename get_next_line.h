@@ -8,12 +8,22 @@
 # include <stdlib.h>
 # include <unistd.h>
 
+typedef struct s_gnl_struct {
+	char		*main_buffer;
+	ssize_t 	main_buffer_length;
+	ssize_t		last_checked_index;
+	ssize_t 	newline_index;
+
+	char 		*read_buffer;
+	ssize_t		read_bytes;
+}	t_gnl_struct;
+
 char	*get_next_line(int fd);
 
-char	*ft_strchr(char *s, int c);
-char	*ft_strjoin(char *s1, char *s2);
-char	*get_single_line(char *str);
-char	*trim_static_line(char *old_static_line);
+int		get_newline_index(t_gnl_struct *gnl_struct);
+char	*join_read_buffer_to_main_buffer(t_gnl_struct *gnl_struct);
+char	*get_single_line(t_gnl_struct *gnl_struct);
+char	*trim_main_buffer(t_gnl_struct *gnl_struct);
 size_t	ft_strlen(const char *s);
 
 #endif
