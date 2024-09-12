@@ -52,7 +52,7 @@ char	*join_read_buffer_to_main_buffer(t_gnl_struct *gnl_struct)
 	}
 	if (!gnl_struct->main_buffer || !gnl_struct->read_buffer)
 		return(NULL);
-	new_main_buffer = (char *)malloc((gnl_struct->main_buffer_length + gnl_struct->read_bytes + 1) * sizeof(char));
+	new_main_buffer = (char *)malloc(sizeof(char) * (gnl_struct->main_buffer_length + gnl_struct->read_bytes + 1));
 	if (!new_main_buffer)
 		return (NULL);
 

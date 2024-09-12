@@ -1,7 +1,5 @@
 #include "get_next_line.h"
 
-#include <stdio.h>
-
 char		*get_next_line(int fd);
 static void	read_next_line(int fd, t_gnl_struct *gnl_struct);
 static void	clean_gnl_struct(t_gnl_struct *gnl_struct);
@@ -22,13 +20,12 @@ char	*get_next_line(int fd)
 	}
 	single_line = get_single_line(&gnl_struct);
 	gnl_struct.main_buffer = trim_main_buffer(&gnl_struct);
-	// printf("main buffer length: %zd\tnewline index: %zd\tread buffer length: %zd\tlast checked index: %zd\n", gnl_struct.main_buffer_length, gnl_struct.newline_index, gnl_struct.read_bytes, gnl_struct.last_checked_index);
 	return (single_line);
 }
 
 static void	read_next_line(int fd, t_gnl_struct *gnl_struct)
 {
-	gnl_struct->read_buffer = (char *)malloc(sizeof(char) * BUFFER_SIZE + 1);
+	gnl_struct->read_buffer = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
 	if (!gnl_struct->read_buffer)
 		return;
 	gnl_struct->read_bytes = 1;
