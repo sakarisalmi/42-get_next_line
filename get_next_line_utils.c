@@ -26,7 +26,7 @@ void *ft_memcpy(void *dst, const void *src, size_t n){
 	return(dst);
 }
 
-void *ft_strchr(const void *str, unsigned char c) {
+void *ft_strchr(const void *str, const unsigned char c) {
 	unsigned char *it;
 
 	it = (unsigned char *)str;
@@ -38,23 +38,22 @@ void *ft_strchr(const void *str, unsigned char c) {
 	return(NULL);
 }
 
-static void clear_cache(t_cache *cache) {
-	if (cache->bdata.buf) {
-		free(cache->bdata.buf);
-		cache->bdata.buf = NULL;
-	}
-	cache->bdata.size = 0;
-	cache->bdata.type_size = 0;
-	cache->bdata.cap = 0;
-}
+// static void clear_cache(t_cache *cache) {
+// 	if (cache->buf) {
+// 		free(cache->buf);
+// 		cache->buf = NULL;
+// 	}
+// 	cache->size = 0;
+// 	cache->cap = 0;
+// }
 
-void copy_buffer_data_to_cache(t_cache *cache, t_buffer_data *bdata){
-	clear_cache(cache);
-	cache->bdata.buf = bdata->buf;
-	cache->bdata.cap = bdata->cap;
-	cache->bdata.size = bdata->size;
-	cache->bdata.type_size = bdata->type_size;
-}
+// void copy_buffer_data_to_cache(t_cache *cache, t_buffer_data *bdata){
+// 	clear_cache(cache);
+// 	cache->bdata.buf = bdata->buf;
+// 	cache->bdata.cap = bdata->cap;
+// 	cache->bdata.size = bdata->size;
+// 	cache->bdata.type_size = bdata->type_size;
+// }
 
 // // for testing ft_strchr
 // int main(int argc, char **argv){
