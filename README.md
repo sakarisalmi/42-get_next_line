@@ -17,7 +17,7 @@ We are interested only in the first point in this project. Even outside this pro
 In the get_next_line() function that we create in this project, the static variable is used to store the rest of the read string after a newline character ('\n').
 
 ## How Different Implementations Can Make All the Difference
-My original implementation of the project is ok, but it definitely isn't the most efficient algorithm-wise, especially so if the buffer size is set to something very large.
+My original implementation of the project is ok, but it definitely isn't the most efficient, especially so if the buffer size is set to something very large.
 
 To show this, I've decided to create a simple test program where I retrieve all the contents in the Bible using get_next_line():
 ```
@@ -53,8 +53,14 @@ Doesn't seem all that bad, but doing the same with a buffer size of a million ne
 ```
 Damn, over a minute! What the hell happened?
 
-Well, it isn't all that complicated: if you look into the helper functions like ft_strjoin, get_single_line and trim_static_line, you'll notice that some things are unnecessarily repeated, and by refactoring these things you can make the get_next_line-function a lot more efficient. Instead of repeatedly reading through the string to find the next newline-character, why don't we just read it once and simply save the index of that character? And why haven't we stored the the length of the string somewhere already so that we don't need to find it out later on? This is especially useful when the buffer size is massive - in the original version of the project, ft_strlen is used every single time to figure out the length of the string, which undoubtedly slows the down the whole function, especially so when going through something as long as the Bible.
+Well, it isn't all that complicated: if you look into the helper functions like ft_strjoin, get_single_line and trim_static_line, you'll notice that some things are unnecessarily repeated, and by refactoring these things you can make the function a lot faster. For example, why don't we just store the buffer's length into a static variable instead of reading through the string every time the function is called? The project subject doesn't actually limit how we can use static variables, so why shouldn't we just create an entire struct that holds not only the buffer, but also all of its supplemental data (the size of the string, the size of the buffer, etc.), and set that struct as static? That way we have data saved that we can use to skip some quite taxing operations.
 
-The project subject doesn't actually limit how we can use static variables, so why shouldn't we create an entire struct that holds the read line with all of this supplemental data (index of newline character in the string, the length of the static string, etc.), and set that struct as static? That way we have data saved that we can use to skip some quite taxing operations.
+I remembered that I had evaluated a fellow Hive student on the project a good while ago, and his implementation resulted in his function being a lot faster than my own. His get_next_line was able to retrieve the contents of the Bible extremely fast. Because of this I asked for his help on how I could possibly improve my own get_next_line, and he shared his own code and advice, which was invaluable. The best example of how good his implementation was is the way he copied the contents of a string to another: while my own implementation had me copying the string character by character (so just 1 byte at a time), his had the function first copy the string one _unsigned long_ (8 bytes) at a time until that wasn't possible, after which he copied the rest of the string character by character! Stuff like this exemplifies perfectly how much you can do with C compared to other languages - it might be risky in some places, but the performance benefits can be huge. Another thing that this student told me was that I should avoid using malloc as much as possible - something I obviously didn't do in the original version of the project.
 
-I've created a newer version of the project with this implementation in mind.
+After redoing the project with these lessons in mind, the new version is noticeably faster:
+```
+> cc -Wall -Werror -Wextra get_next_line.c get_next_line_utils.c test.c -o test -DBUFFER_SIZE=1000000
+> time ./test
+./test  4.51s user 0.04s system 95% cpu 4.760 total
+```
+Quite the improvement, no?
