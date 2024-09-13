@@ -8,22 +8,23 @@
 # include <stdlib.h>
 # include <unistd.h>
 
-typedef struct s_gnl_struct {
-	char		*main_buffer;
-	ssize_t 	main_buffer_length;
-	ssize_t		last_checked_index;
-	ssize_t 	newline_index;
+typedef struct s_buffer_data {
+	void	*buf;
+	ssize_t size;
+	ssize_t	type_size;
+	ssize_t	cap;
+}	t_buffer_data;
 
-	char 		*read_buffer;
-	ssize_t		read_bytes;
-}	t_gnl_struct;
+typedef struct s_cache {
+	int fd;
+	t_buffer_data bdata;
+}	t_cache;
+
 
 char	*get_next_line(int fd);
 
-int		get_newline_index(t_gnl_struct *gnl_struct);
-char	*join_read_buffer_to_main_buffer(t_gnl_struct *gnl_struct);
-char	*get_single_line(t_gnl_struct *gnl_struct);
-char	*trim_main_buffer(t_gnl_struct *gnl_struct);
-size_t	ft_strlen(const char *s);
+void 	*ft_memcpy(void *dst, const void *src, size_t n);
+void 	*ft_strchr(const void *str, unsigned char c);
+void	copy_buffer_data_to_cache(t_cache *cache, t_buffer_data *bdata);
 
 #endif

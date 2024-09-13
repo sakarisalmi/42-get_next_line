@@ -1,121 +1,103 @@
 #include "get_next_line.h"
 
-size_t	ft_strlen(const char *s);
-int		get_newline_index(t_gnl_struct *gnl_struct);
-char	*join_read_buffer_to_main_buffer(t_gnl_struct *gnl_struct);
-char	*get_single_line(t_gnl_struct *gnl_struct);
-char	*trim_main_buffer(t_gnl_struct *gnl_struct);
+#include <string.h>
+#include <stdio.h>
 
-size_t	ft_strlen(const char *s)
-{
-	size_t	len;
+void *ft_memcpy(void *dst, const void *src, size_t n){
+	size_t	chunks;
+	void	*tmp_ptr;
 
-	len = 0;
-	while (*s != '\0')
-	{
-		len++;
-		s++;
+	if (dst == src || (!dst || !src) || n == 0)
+		return(dst);
+	chunks = n / sizeof(unsigned long);
+	n -= chunks * sizeof(unsigned long);
+
+	tmp_ptr = dst;
+	while (chunks--){
+		*(unsigned long *)tmp_ptr = *(const unsigned long *)src;
+		tmp_ptr = (unsigned long *)tmp_ptr + 1;
+		src = (const unsigned long *)src + 1;
 	}
-	return (len);
+	while (n--) {
+		*(unsigned char *)tmp_ptr = *(const unsigned char *)src;
+		tmp_ptr = (unsigned char *)tmp_ptr + 1;
+		src = (const unsigned char *)src + 1;
+	}
+	return(dst);
 }
 
-int	get_newline_index(t_gnl_struct *gnl_struct)
-{
-	int		i;
+void *ft_strchr(const void *str, unsigned char c) {
+	unsigned char *it;
 
-	if (!gnl_struct->main_buffer)
-		return (0);
-	i = gnl_struct->last_checked_index;
-	while (gnl_struct->main_buffer[i])
-	{
-		if (gnl_struct->main_buffer[i] == '\n')
-		{
-			gnl_struct->newline_index = i;
-			return(1);
-		}
-		i++;
+	it = (unsigned char *)str;
+	while (*it){
+		if (*it == c)
+			return (void *)it;
+		++it;
 	}
-	gnl_struct->last_checked_index = i;
-	return(0);
+	return(NULL);
 }
 
-char	*join_read_buffer_to_main_buffer(t_gnl_struct *gnl_struct)
-{
-	char 	*new_main_buffer;
-	ssize_t i;
-	ssize_t j;
-
-	if (!gnl_struct->main_buffer)
-	{
-		gnl_struct->main_buffer = (char *)malloc(sizeof(char) * 1);
-		gnl_struct->main_buffer[0] = '\0';
+static void clear_cache(t_cache *cache) {
+	if (cache->bdata.buf) {
+		free(cache->bdata.buf);
+		cache->bdata.buf = NULL;
 	}
-	if (!gnl_struct->main_buffer || !gnl_struct->read_buffer)
-		return(NULL);
-	new_main_buffer = (char *)malloc(sizeof(char) * (gnl_struct->main_buffer_length + gnl_struct->read_bytes + 1));
-	if (!new_main_buffer)
-		return (NULL);
-
-	i = 0;
-	while(i < gnl_struct->main_buffer_length)
-	{
-		new_main_buffer[i] = gnl_struct->main_buffer[i];
-		++i;
-	}
-	j = 0;
-	while(j < gnl_struct->read_bytes)
-		new_main_buffer[i++] = gnl_struct->read_buffer[j++];
-	new_main_buffer[i] = '\0';
-	free(gnl_struct->main_buffer);
-	gnl_struct->main_buffer_length += gnl_struct->read_bytes;
-	return(new_main_buffer);
+	cache->bdata.size = 0;
+	cache->bdata.type_size = 0;
+	cache->bdata.cap = 0;
 }
 
-char	*get_single_line(t_gnl_struct *gnl_struct)
-{
-	char	*single_line;
-	int		i;
-
-	if (!gnl_struct->main_buffer)
-		return(NULL);
-	single_line = (char *)malloc(sizeof(char) * (gnl_struct->newline_index + 2));
-	if (!single_line)
-		return(NULL);
-	i = 0;
-	while (i <= gnl_struct->newline_index)
-	{
-		single_line[i] = gnl_struct->main_buffer[i];
-		++i;
-	}
-	single_line[i] = '\0';
-	if (single_line[0] == '\0')
-	{
-		free(single_line);
-		return(NULL);
-	}
-	return(single_line);
+void copy_buffer_data_to_cache(t_cache *cache, t_buffer_data *bdata){
+	clear_cache(cache);
+	cache->bdata.buf = bdata->buf;
+	cache->bdata.cap = bdata->cap;
+	cache->bdata.size = bdata->size;
+	cache->bdata.type_size = bdata->type_size;
 }
 
-char	*trim_main_buffer(t_gnl_struct *gnl_struct)
-{
-	char	*new_main_buffer;
-	int 	i;
-	int		j;
+// // for testing ft_strchr
+// int main(int argc, char **argv){
+// 	void *ptr;
 
-	// if true, discard whole buffer
-	if (gnl_struct->main_buffer_length == gnl_struct->newline_index + 1)
-	{
-		free(gnl_struct->main_buffer);
-		return(NULL);
-	}
-	new_main_buffer = (char *)malloc(sizeof(char) * (gnl_struct->main_buffer_length - gnl_struct->newline_index));
-	if (!new_main_buffer)
-		return(NULL);
-	i = gnl_struct->newline_index + 1;
-	j = 0;
-	while (i < gnl_struct->main_buffer_length)
-		new_main_buffer[j++] = gnl_struct->main_buffer[i++];
-	free(gnl_struct->main_buffer);
-	gnl_struct->main_buffer_length -= gnl_struct->newline_index + 1;
-	return(new_main_buffer);
-}
+// 	if (argc != 2){
+// 		printf("give an arg, bitch!\n");
+// 		return 1;
+// 	}
+// 	else {
+// 		ptr = ft_strchr((const void *)argv[1], '\n');
+// 		if (ptr == NULL){
+// 			printf("no newline found in %s\n", argv[1]);
+// 		} else {
+// 			printf ("newline found: %s", (unsigned char *)ptr);
+// 		}
+// 	}
+// 	return 0;
+// }
+
+// // for testing ft_memcpy
+// int main(int argc, char **argv){
+// 	void *ptr;
+
+// 	if (argc != 2){
+// 		printf("give one arg, bitch!\n");
+// 		return 1;
+// 	}
+// 	else {
+// 		ptr = malloc(sizeof(unsigned char) * 100);
+// 		ptr = ft_memcpy(ptr, (const void *)argv[1], strlen(argv[1]));
+// 		printf("orig: %s\n", argv[1]);
+// 		printf("copy: %s\n", (unsigned char *)ptr);
+// 	}
+// 	return 0;
+// }
+
+// quick calc check
+// int main(){
+
+// 	unsigned char src[] = "0123456789";
+// 	unsigned char *ptr = &src[4];
+// 	printf("size of new buf: %ld\n", ptr - src + 2);
+// 	printf("src loc: %ld\n", (unsigned long)src);
+// 	printf("ptr loc: %ld\n", (unsigned long)ptr);
+// }
