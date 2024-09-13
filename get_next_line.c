@@ -1,83 +1,48 @@
 #include "get_next_line.h"
 
-static int	resize_buffer(t_cache *cache, ssize_t new_cap){
-	void	*new_buffer;
-
-	if (new_cap <= cache->cap)
-		return(1);
-	new_buffer = malloc(new_cap);
-	if (!new_buffer)
-		return(0);
-	if (!cache->buf)
-		cache->buf = new_buffer;
-	else {
-		ft_memcpy(new_buffer, cache->buf, cache->size);
-		free(cache->buf);
-		cache->buf = new_buffer;
-	}
-	cache->cap = new_cap;
-	return(1);
-}
-
-static int init_cache(t_cache *cache, int fd) {
-	if (fd != cache->fd) {
-		cache->fd = fd;
-		cache->cap = 0;
-		if (!resize_buffer(cache, BUFFER_SIZE))
-			return(0);
-		cache->size = 0;
-	}
-	return(1);
-}
-
-static char *get_line_from_buf(t_cache *cache) {
-	char *src;
-	char *newline;
-	char *line;
-	size_t line_size, remaining_size;
-
-	if (!cache->buf)
-		return(NULL);
-	src = (char *)cache->buf;
-	newline = ft_strchr(src, '\n');
-	if (newline) {
-		line_size = newline - src + 1;
-		line = malloc(line_size + 1);
-		if (!line)
-			return(NULL);
-		line = ft_memcpy(line, src, line_size);
-		line[line_size] = '\0';
-		remaining_size = cache->size - line_size;
-		src = ft_memcpy(src, src + line_size, remaining_size);
-		src[remaining_size] = '\0';
-		cache->size = remaining_size;
-		return(line);
-	}
-	return(NULL);
-}
+char	*get_next_line(int fd);
+char	*read_next_line(int fd, char *static_line);
 
 char	*get_next_line(int fd)
 {
-	static t_cache	cache;
-	int				read_bytes;
-	char			*line;
+	static char	*static_line;
+	char		*single_line;
 
 	if (fd < 0 || read(fd, 0, 0) < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
-	if (!init_cache(&cache, fd))
-		return(NULL);
+	static_line = read_next_line(fd, static_line);
+	if (!static_line)
+		return (NULL);
+	single_line = get_single_line(static_line);
+	static_line = trim_static_line(static_line);
+	return (single_line);
+}
+
+char	*read_next_line(int fd, char *static_line)
+{
+	char	*buffer;
+	int		read_bytes;
+	int		i;
+
+	buffer = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
+	if (!buffer)
+		return (NULL);
 	read_bytes = 1;
-	while (read_bytes > 0){
-		line = get_line_from_buf(&cache);
-		if (line){
-			return(line);
+	while (read_bytes != 0 && !ft_strchr(static_line, '\n'))
+	{
+		read_bytes = read(fd, buffer, BUFFER_SIZE);
+		if (read_bytes == -1)
+		{
+			free(buffer);
+			return (NULL);
 		}
-		if (cache.cap < cache.size + BUFFER_SIZE){
-			if (!resize_buffer(&cache, 2 * cache.cap))
-				return(NULL);
-		}
-		read_bytes = read(fd, cache.buf + cache.size, BUFFER_SIZE);
-		cache.size += read_bytes;
+		buffer[read_bytes] = '\0';
+		if (read_bytes != 0)
+			static_line = ft_strjoin(static_line, buffer);
 	}
-	return (line);
+	i = -1;
+	while (buffer[++i] != '\0')
+		buffer[i] = '\0';
+	free(buffer);
+	return (static_line);
 }

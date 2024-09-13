@@ -8,17 +8,12 @@
 # include <stdlib.h>
 # include <unistd.h>
 
-typedef struct s_cache {
-	int 	fd;
-	void	*buf;
-	ssize_t size;
-	ssize_t	cap;
-}	t_cache;
-
-
 char	*get_next_line(int fd);
 
-void 	*ft_memcpy(void *dst, const void *src, size_t n);
-void 	*ft_strchr(const void *str, const unsigned char c);
+char	*ft_strchr(char *s, int c);
+char	*ft_strjoin(char *s1, char *s2);
+char	*get_single_line(char *str);
+char	*trim_static_line(char *old_static_line);
+size_t	ft_strlen(const char *s);
 
 #endif
