@@ -75,4 +75,4 @@ Quite the improvement, no?
 
    > gcc -Wall -Werror -Wextra get_next_line_bonus.c get_next_line_utils_bonus.c [your other files here]
 
-   The difference between these two versions is that the latter one can be used with multiple file descriptors without having the contents of one inputstream being overwritten.
+   The difference between these two versions is that the latter one can be used with multiple file descriptors without having the contents of one inputstream being overwritten (the structs are in an array set to a hardcoded value of 4096).
