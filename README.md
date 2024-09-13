@@ -68,11 +68,11 @@ Quite the improvement, no?
 ## How to Install and Use the Function
 1. Git clone the repository
 2. Copy the files from the repository to your own project directory, or alternatively import your own files into the cloned directory.
-3. compile whatever program that uses the function
-   > gcc -Wall -Werror -Wextra get_next_line.c get_next_line_utils.c [your other files here]
+3. compile whatever program that uses the function with these files
+   > get_next_line.c get_next_line_utils.c
    
    Or alternatively
 
-   > gcc -Wall -Werror -Wextra get_next_line_bonus.c get_next_line_utils_bonus.c [your other files here]
+   > get_next_line_bonus.c get_next_line_utils_bonus.c
 
    The difference between these two versions is that the latter one can be used with multiple file descriptors without having the contents of one inputstream being overwritten (the structs are in an array set to a hardcoded value of 4096).
