@@ -64,20 +64,20 @@ char	*get_next_line(int fd)
 
 	if (fd < 0 || read(fd, 0, 0) < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
-	if (!init_cache(&cache, fd))
+	if (!init_cache(&cache[fd], fd))
 		return(NULL);
 	read_bytes = 1;
 	while (read_bytes > 0){
-		line = get_line_from_buf(&cache);
+		line = get_line_from_buf(&cache[fd]);
 		if (line){
 			return(line);
 		}
-		if (cache.cap < cache.size + BUFFER_SIZE){
-			if (!resize_buffer(&cache, 2 * cache.cap))
+		if (cache[fd].cap < cache[fd].size + BUFFER_SIZE){
+			if (!resize_buffer(&cache[fd], 2 * cache[fd].cap))
 				return(NULL);
 		}
-		read_bytes = read(fd, cache.buf + cache.size, BUFFER_SIZE);
-		cache.size += read_bytes;
+		read_bytes = read(fd, cache[fd].buf + cache[fd].size, BUFFER_SIZE);
+		cache[fd].size += read_bytes;
 	}
 	return (line);
 }
