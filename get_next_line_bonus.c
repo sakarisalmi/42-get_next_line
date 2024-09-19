@@ -11,7 +11,7 @@ static int	resize_buffer(t_cache *cache, ssize_t new_cap){
 	if (!cache->buf)
 		cache->buf = new_buffer;
 	else {
-		ft_memcpy(new_buffer, cache->buf, cache->size);
+		gnl_memcpy(new_buffer, cache->buf, cache->size);
 		free(cache->buf);
 		cache->buf = new_buffer;
 	}
@@ -39,16 +39,16 @@ static char *get_line_from_buf(t_cache *cache) {
 	if (!cache->buf)
 		return(NULL);
 	src = (char *)cache->buf;
-	newline = ft_strchr(src, '\n');
+	newline = gnl_strchr(src, '\n');
 	if (newline) {
 		line_size = newline - src + 1;
 		line = malloc(line_size + 1);
 		if (!line)
 			return(NULL);
-		line = ft_memcpy(line, src, line_size);
+		line = gnl_memcpy(line, src, line_size);
 		line[line_size] = '\0';
 		remaining_size = cache->size - line_size;
-		src = ft_memcpy(src, src + line_size, remaining_size);
+		src = gnl_memcpy(src, src + line_size, remaining_size);
 		src[remaining_size] = '\0';
 		cache->size = remaining_size;
 		return(line);

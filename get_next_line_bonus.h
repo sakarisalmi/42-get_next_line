@@ -18,7 +18,7 @@ typedef struct s_cache {
 
 char	*get_next_line(int fd);
 
-void 	*ft_memcpy(void *dst, const void *src, size_t n);
-void 	*ft_strchr(const void *str, const unsigned char c);
+void 	*gnl_memcpy(void *dst, const void *src, size_t n);
+void 	*gnl_strchr(const void *str, const unsigned char c);
 
 #endif

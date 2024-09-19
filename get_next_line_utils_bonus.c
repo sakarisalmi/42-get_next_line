@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 
-void *ft_memcpy(void *dst, const void *src, size_t n){
+void *gnl_memcpy(void *dst, const void *src, size_t n){
 	size_t	chunks;
 	void	*tmp_ptr;
 
@@ -26,7 +26,7 @@ void *ft_memcpy(void *dst, const void *src, size_t n){
 	return(dst);
 }
 
-void *ft_strchr(const void *str, const unsigned char c) {
+void *gnl_strchr(const void *str, const unsigned char c) {
 	unsigned char *it;
 
 	it = (unsigned char *)str;
