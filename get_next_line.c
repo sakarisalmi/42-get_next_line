@@ -78,6 +78,8 @@ char	*get_next_line(int fd)
 		}
 		read_bytes = read(fd, cache.buf + cache.size, BUFFER_SIZE);
 		cache.size += read_bytes;
+		char *buffer = (char *)cache.buf;
+		buffer[cache.size] = '\0';
 	}
 	return (line);
 }
